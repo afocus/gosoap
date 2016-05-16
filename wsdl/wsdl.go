@@ -105,37 +105,3 @@ type ServiceAddress struct {
 	XMLName  xml.Name `xml:"soap:address"`
 	Location string   `xml:"location,attr"`
 }
-
-func NewDefinitions(namespace, name string) *Definitions {
-	def := &Definitions{
-		Tns:      namespace,
-		TargetNs: namespace,
-		Soap:     "http://schemas.xmlsoap.org/wsdl/soap/",
-		SoapEnv:  "http://schemas.xmlsoap.org/soap/envelope/",
-		Wsdl:     "http://schemas.xmlsoap.org/wsdl/",
-		Xsd:      "http://www.w3.org/2001/XMLSchema",
-		Xsi:      "http://www.w3.org/2001/XMLSchema-instance",
-	}
-	sch := xsd.Schema{
-		TargetNamespace: namespace,
-		Import: []xsd.Import{
-			{Namespace: "http://schemas.xmlsoap.org/soap/encoding/"},
-			{Namespace: "http://schemas.xmlsoap.org/wsdl/"}},
-	}
-	def.Types.Schemas = append(def.Types.Schemas, sch)
-
-	def.PortType.Name = name + "PortType"
-
-	def.Binding.Name = name + "Binding"
-	def.Binding.Type = "tns:" + def.PortType.Name
-	def.Binding.SoapBinding.Style = "rpc"
-	def.Binding.SoapBinding.Transport = "http://schemas.xmlsoap.org/soap/http"
-
-	def.Service.Name = name
-	def.Service.Port = ServicePort{
-		Name:    name + "Port",
-		Binding: "tns:" + def.Binding.Name,
-		// Address: ServiceAddress{Location: location},
-	}
-	return def
-}
