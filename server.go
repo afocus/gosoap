@@ -101,6 +101,12 @@ func MulitService(port string, server ...*Server) error {
 /////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
 
+func responeHeader(w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "text/xml; charset=utf-8")
+	w.Header().Set("Accpet", "text/xml")
+	w.Write([]byte(xml.Header))
+}
+
 // 监听服务
 // 这里可以设置http 比如超时时间 最大连接数等 后续再做
 func listen(port string) error {
@@ -188,7 +194,7 @@ func (s *Server) handleFunc(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		// 网址带参数wsdl则显示wsdl文件
 		if strings.EqualFold("wsdl", r.URL.RawQuery) {
-			w.Header().Set("Content-type", "text/xml")
+			responeHeader(w)
 			w.Write(s.wsdlcache)
 		} else {
 			// 其他情况返回一个提示信息
@@ -234,7 +240,7 @@ func (s *Server) handleFunc(w http.ResponseWriter, r *http.Request) {
 }
 
 func serverSoapFault(w http.ResponseWriter, fault *SoapFault) {
-	w.Header().Set("Content-type", "text/xml")
+	responeHeader(w)
 	data, _ := xml.Marshal(fault)
 	b, _ := xml.Marshal(soap.NewEnvelope(data))
 	w.Write(b)
@@ -288,7 +294,7 @@ func (s *Server) request(w http.ResponseWriter, de *xml.Decoder, startEle *xml.S
 		)
 		return
 	}
-	w.Header().Set("Content-type", "text/xml")
+	responeHeader(w)
 	b, _ := xml.Marshal(soap.NewEnvelope(buf.Bytes()))
 	w.Write(b)
 
@@ -302,7 +308,6 @@ func (s *Server) bind(port string) error {
 	if erro != nil {
 		return erro
 	}
-	s.wsdlcache = []byte(xml.Header)
 	s.wsdlcache = append(s.wsdlcache, b...)
 	http.HandleFunc("/"+s.name, s.handleFunc)
 	return nil
